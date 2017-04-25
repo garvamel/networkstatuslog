@@ -5,10 +5,7 @@ import datetime
 import time
 import csv
 
-with open('networklog.csv', 'a') as logfile:
-    fieldnames = ['Down', 'Up', 'Interval']
-    writer = csv.DictWriter(logfile, fieldnames=fieldnames)
-    writer.writeheader()
+once = True
 
 def internet_connection(host="8.8.8.8", port=53, timeout=10):
     """
@@ -38,10 +35,20 @@ while True:
         prevstatus = status
     elif status and status != prevstatus:
         time_up = test_time
-        with open('networklog.csv', 'a') as logfile:
+
+        with open(time_down.strftime('%Y%m%d') + '.csv', 'a') as logfile:
             fieldnames = ['Down', 'Up', 'Interval']
             writer = csv.DictWriter(logfile, fieldnames=fieldnames)
-            writer.writerow({'Down': time_down.strftime('%Y-%m-%d %H:%M:%S'), 'Up': time_up.strftime('%Y-%m-%d %H:%M:%S'), 'Interval': str(time_up-time_down)})
+
+            if once:
+                writer.writeheader()
+                once = False
+
+            if time_down.day != time_up.day:
+                writer.writerow({'Down': time_down.strftime('%H:%M:%S'), 'Up': time_up.strftime('%Y-%m-%d %H:%M:%S'), 'Interval': str(time_up-time_down)}) 
+            else:
+                writer.writerow({'Down': time_down.strftime('%H:%M:%S'), 'Up': time_up.strftime('%H:%M:%S'), 'Interval': str(time_up-time_down)})
+
         prevstatus = status
     time.sleep(1)
 
